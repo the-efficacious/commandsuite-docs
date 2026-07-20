@@ -22,7 +22,7 @@ const flat = flattenNav(sections);
         <ul class="landing-grid">
           {section.entries.map((entry) => (
             <li>
-              <a href={`/docs/${entry.slug}`} class="landing-card">
+              <a href={`/${entry.slug}`} class="landing-card">
                 <span class="card-title">{entry.title}</span>
                 {entry.description && <span class="card-desc">{entry.description}</span>}
               </a>
