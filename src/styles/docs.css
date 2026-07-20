@@ -258,3 +258,32 @@
     padding: 32px 0 64px;
   }
 }
+
+/* ─── Dark mode — the docs are dark-only ──────────────────────────
+   Loaded after brand/theme.css, so these :root overrides win. The
+   component primitives all derive from the palette + functional
+   tokens, so remapping here flips the whole surface. Values stay in
+   the brand family: ink becomes the surface, ice/frost carry text,
+   glacier takes over steel's accent role for contrast on dark. */
+:root {
+  /* Palette, remapped for dark */
+  --ink: #e6eef5;               /* strong text (was the dark ink) */
+  --paper: #0e1c2b;             /* the surface (was cream)        */
+  --ice: #16283a;               /* raised surfaces: panel heads   */
+  --frost: #a4bdd1;             /* secondary text — unchanged     */
+  --glacier: #7ea3c0;           /* slightly brightened            */
+  --steel: #6389a6;             /* accent, lifted for contrast    */
+  --graphite: #9dafc0;          /* muted text, lightened          */
+  --ember: #d8925f;             /* warm accent, lifted            */
+
+  /* Functional */
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --muted: var(--graphite);
+  --rule: rgba(230, 238, 245, 0.12);
+  --rule-strong: rgba(230, 238, 245, 0.34);
+  --ring: rgba(126, 163, 192, 0.4);
+  --ok: #7ea3c0;
+  --warn: #d8925f;
+  --err: #d06a51;
+}

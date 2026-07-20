@@ -94,7 +94,7 @@ html {
 body {
   background:
     radial-gradient(ellipse at top, rgba(99, 137, 166, 0.08), transparent 55%),
-    linear-gradient(180deg, var(--paper) 0%, #f2eee5 100%);
+    linear-gradient(180deg, var(--paper) 0%, #0a1520 100%);
   background-attachment: fixed;
   color: var(--fg);
   font-family: var(--f-sans);
@@ -188,7 +188,7 @@ body::before {
   z-index: 40;
   backdrop-filter: blur(10px) saturate(1.05);
   -webkit-backdrop-filter: blur(10px) saturate(1.05);
-  background: rgba(246, 243, 236, 0.72);
+  background: rgba(14, 28, 43, 0.75);
   border-bottom: 1px solid var(--rule);
 }
 .topbar-inner {

@@ -36,7 +36,7 @@ export default defineConfig({
   markdown: {
     rehypePlugins: [rehypeStripDocsPrefix],
     shikiConfig: {
-      theme: 'github-light',
+      theme: 'github-dark',
       wrap: true,
     },
   },
