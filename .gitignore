@@ -1,0 +1,14 @@
+# deps / build
+node_modules/
+dist/
+.astro/
+.wrangler/
+
+# synced at build time from the OSS repo (the-efficacious/commandsuite docs/)
+# — build input, not source. See scripts/sync-oss-docs.mjs.
+src/content/docs/
+
+# env / editor
+.env
+.env.*
+.DS_Store

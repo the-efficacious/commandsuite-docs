@@ -1,0 +1,77 @@
+name: Deploy
+
+# Deploys docs.commandsuite.io. Three triggers:
+#   - push to main (site changes)
+#   - every 30 min: rebuild ONLY if the OSS repo's docs/ tree changed
+#     since the last successful deploy (content freshness — no
+#     cross-repo tokens or dispatch needed; both repos are public)
+#   - manual workflow_dispatch
+#
+# Secret required: CLOUDFLARE_API_TOKEN (Workers Scripts: Edit).
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read # compare last successful run time vs OSS docs commits
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check whether a rebuild is needed (schedule only)
+        id: fresh
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Latest OSS commit touching docs/
+          oss=$(gh api 'repos/the-efficacious/commandsuite/commits?path=docs&per_page=1' \
+            -q '.[0].commit.committer.date')
+          # Last successful run of this workflow
+          last=$(gh api 'repos/${{ github.repository }}/actions/workflows/deploy.yml/runs?status=success&per_page=1' \
+            -q '.workflow_runs[0].created_at' 2>/dev/null || echo "")
+          echo "oss docs last changed: $oss | last successful deploy: ${last:-never}"
+          if [ -z "$last" ] || [ "$oss" \> "$last" ]; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip (docs unchanged)
+        if: github.event_name == 'schedule' && steps.fresh.outputs.needed == 'false'
+        run: echo "OSS docs unchanged since last deploy — nothing to do."
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        if: github.event_name != 'schedule' || steps.fresh.outputs.needed == 'true'
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+        if: github.event_name != 'schedule' || steps.fresh.outputs.needed == 'true'
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        if: github.event_name != 'schedule' || steps.fresh.outputs.needed == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+        if: github.event_name != 'schedule' || steps.fresh.outputs.needed == 'true'
+
+      - run: pnpm build
+        if: github.event_name != 'schedule' || steps.fresh.outputs.needed == 'true'
+
+      - uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3
+        if: github.event_name != 'schedule' || steps.fresh.outputs.needed == 'true'
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 02abc51d1248dbb8db863f5b8e70af04
+          command: deploy
