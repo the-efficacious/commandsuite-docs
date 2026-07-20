@@ -121,10 +121,13 @@
 .docs-article pre {
   /* biome-ignore lint/complexity/noImportantStyles: overrides Shiki's
      inline `background-color` attribute which is injected at build
-     time on every code fence and outranks our selector otherwise. */
-  background: var(--ink) !important;
-  color: var(--ice);
-  border: 1px solid var(--ink);
+     time on every code fence and outranks our selector otherwise.
+     Deeper than the page surface (#0e1c2b) so fences read as inset
+     wells rather than raised panels; github-dark token colors sit
+     comfortably on it. */
+  background: #0a1520 !important;
+  color: var(--frost);
+  border: 1px solid var(--rule);
   border-radius: var(--r-sm);
   padding: 18px 22px;
   overflow-x: auto;
