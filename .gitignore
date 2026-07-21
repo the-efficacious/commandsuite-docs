@@ -6,7 +6,9 @@ dist/
 
 # synced at build time from the OSS repo (the-efficacious/commandsuite docs/)
 # — build input, not source. See scripts/sync-oss-docs.mjs.
-src/content/docs/
+# No trailing slash: this path is a symlink in LOCAL mode, and a
+# directory-only pattern (trailing slash) would not match it.
+src/content/docs
 
 # env / editor
 .env

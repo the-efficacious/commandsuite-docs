@@ -19,6 +19,7 @@ import {
   readdirSync,
   rmSync,
   symlinkSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -42,11 +43,23 @@ function log(msg) {
 }
 
 function cleanOutDir() {
-  if (existsSync(OUT_DIR)) {
-    const st = lstatSync(OUT_DIR);
-    if (st.isSymbolicLink() || st.isDirectory()) {
-      rmSync(OUT_DIR, { recursive: true, force: true });
-    }
+  // lstatSync (NOT existsSync) so a DANGLING symlink is still removed —
+  // existsSync follows the link and returns false for a broken target,
+  // leaving a stale link that the later mkdir chokes on with ENOENT.
+  // This is the exact failure a committed absolute symlink produces when
+  // checked out on a machine (e.g. CI) where the target doesn't exist.
+  try {
+    const st = lstatSync(OUT_DIR); // lstat throws ENOENT only if nothing is there
+    // A symlink (LOCAL mode, or a dangling committed link) must be UNLINKED:
+    // it operates on the link itself and never follows it. rmSync instead
+    // stats the target to decide how to remove — for a DANGLING link that
+    // stat fails and, with force, no-ops, leaving the stale link for the
+    // mkdir/symlink below to trip over (EEXIST / ENOENT). unlink has no such
+    // failure mode.
+    if (st.isSymbolicLink()) unlinkSync(OUT_DIR);
+    else rmSync(OUT_DIR, { recursive: true, force: true });
+  } catch {
+    /* nothing at OUT_DIR — clean slate */
   }
   mkdirSync(dirname(OUT_DIR), { recursive: true });
 }
